@@ -9,10 +9,15 @@ $icon-font-path: "/bower_components/bootstrap-sass-official/vendor/assets/fonts/
 
 @import "compass";
 
-.header .bottom-border {
-    margin: 20px 0 20px 0;
-    height: 1px;
-    @include background(linear-gradient(right, #000, #fff));
+.header {
+  .nav {
+    padding-top: 10px;
+  }
+  .bottom-border {
+      margin: 20px 0 20px 0;
+      height: 1px;
+      @include background(linear-gradient(right, #000, #fff));
+  }
 }
 
 .panel {
