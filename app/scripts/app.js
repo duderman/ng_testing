@@ -27,11 +27,9 @@
 
   angular.module('ngTestingApp').controller('MainCtrl', [
     '$scope', 'Sections', 'ControlTypes', function($scope, Sections, ControlTypes) {
-      var changeValue;
       $scope.sections = Sections.getAll();
       $scope.currentSection = $scope.sections[0];
       $scope.isHasValidationError = function(errorObject) {
-        debugger;
         var e, k;
         for (k in errorObject) {
           if (!__hasProp.call(errorObject, k)) continue;
@@ -44,31 +42,11 @@
       $scope.getControlTypeUrl = function(type) {
         return ControlTypes.getByType(type);
       };
-      changeValue = function(direction) {
-        var newValue;
-        switch ($scope.currentSection.type || 'number') {
-          case 'number':
-            newValue = $scope.currentSection.value + (direction === 'down' ? -1 : 1);
-            break;
-          case 'date':
-            newValue = new Date($scope.currentSection.value.getTime() + (24 * 60 * 60 * 1000) * (direction === 'down' ? -1 : 1));
-            break;
-          case 'select':
-            newValue = $scope.currentSection.availibleValues[$scope.currentSection.availibleValues.indexOf($scope.currentSection.value) + (direction === 'down' ? -1 : 1)];
-            if (newValue == null) {
-              newValue = $scope.currentSection.value;
-            }
-        }
-        debugger;
-        if (($scope.currentSection.range == null) || (($scope.currentSection.range != null) && ($scope.currentSection.range.min < newValue && newValue < $scope.currentSection.range.max))) {
-          return $scope.currentSection.value = newValue;
-        }
-      };
       $scope.incrementCurrentSection = function() {
-        return changeValue('up');
+        return Sections.changeValue($scope.currentSection, 'up');
       };
       $scope.decrementCurrentSection = function() {
-        return changeValue('down');
+        return Sections.changeValue($scope.currentSection, 'down');
       };
       return $scope;
     }
@@ -160,6 +138,25 @@
           }
         }
         return _results;
+      },
+      changeValue: function(value, direction) {
+        var newValue;
+        switch (value.type || 'number') {
+          case 'number':
+            newValue = value.value + (direction === 'down' ? -1 : 1);
+            break;
+          case 'date':
+            newValue = new Date(value.value.getTime() + (24 * 60 * 60 * 1000) * (direction === 'down' ? -1 : 1));
+            break;
+          case 'select':
+            newValue = value.availibleValues[value.availibleValues.indexOf(value.value) + (direction === 'down' ? -1 : 1)];
+            if (newValue == null) {
+              newValue = value.value;
+            }
+        }
+        if ((value.range == null) || ((value.range != null) && (value.range.min <= newValue && newValue <= value.range.max))) {
+          return value.value = newValue;
+        }
       }
     };
   });

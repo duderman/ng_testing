@@ -60,4 +60,17 @@ angular.module('ngTestingApp')
     {
       getAll: -> sections
       getById: (id) -> (s for s in sections when s.id is id)
+      changeValue: (value, direction) ->
+        switch (value.type || 'number')
+          when 'number'
+            newValue = value.value + (if direction is 'down' then -1 else 1)
+          when 'date'
+            newValue = new Date(value.value.getTime() + \
+                (24 * 60 * 60 * 1000)*(if direction is 'down' then -1 else 1));
+          when 'select'
+            newValue = value.availibleValues[value.availibleValues.indexOf(value.value) + \
+              (if direction is 'down' then -1 else 1)]
+            newValue = value.value if not newValue?
+        value.value = newValue if not value.range? or (value.range? and value.range.min <= newValue <= value.range.max)
+
     }
