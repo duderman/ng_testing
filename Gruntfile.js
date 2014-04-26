@@ -38,6 +38,13 @@ module.exports = function (grunt) {
           livereload: true
         }
       },
+      coffee: {
+        files: ['<%= yeoman.app %>/scripts/{,*/}*.coffee'],
+        tasks: ['clean:coffee', 'coffee:compile'],
+        options: {
+          livereload: true
+        }
+      },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
         tasks: ['newer:jshint:test', 'karma']
@@ -54,7 +61,7 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         },
         files: [
-          '<%= yeoman.app %>/{,*/}*.html',
+          '<%= yeoman.app %>/**/*.html',
           '.tmp/styles/{,*/}*.css',
           '<%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
         ]
@@ -125,13 +132,14 @@ module.exports = function (grunt) {
           ]
         }]
       },
-      server: '.tmp'
+      server: '.tmp',
+      coffee: ['<%= yeoman.app %>/scripts/app.js', '<%= yeoman.app %>/scripts/app.js.map']
     },
 
     // Add vendor prefixed styles
     autoprefixer: {
       options: {
-        browsers: ['last 1 version']
+        // browsers: ['last 2 version']
       },
       dist: {
         files: [{
@@ -168,9 +176,9 @@ module.exports = function (grunt) {
         httpImagesPath: '/images',
         httpGeneratedImagesPath: '/images/generated',
         httpFontsPath: '/styles/fonts',
-        relativeAssets: false,
+        relativeAssets: true,
         assetCacheBuster: false,
-        raw: 'Sass::Script::Number.precision = 10\n'
+        // raw: 'Sass::Script::Number.precision = 10\n'
       },
       dist: {
         options: {
@@ -339,38 +347,24 @@ module.exports = function (grunt) {
       ]
     },
 
-    // By default, your `index.html`'s <!-- Usemin block --> will take care of
-    // minification. These next options are pre-configured if you do not wish
-    // to use the Usemin blocks.
-    // cssmin: {
-    //   dist: {
-    //     files: {
-    //       '<%= yeoman.dist %>/styles/main.css': [
-    //         '.tmp/styles/{,*/}*.css',
-    //         '<%= yeoman.app %>/styles/{,*/}*.css'
-    //       ]
-    //     }
-    //   }
-    // },
-    // uglify: {
-    //   dist: {
-    //     files: {
-    //       '<%= yeoman.dist %>/scripts/scripts.js': [
-    //         '<%= yeoman.dist %>/scripts/scripts.js'
-    //       ]
-    //     }
-    //   }
-    // },
-    // concat: {
-    //   dist: {}
-    // },
-
     // Test settings
     karma: {
       unit: {
         configFile: 'karma.conf.js',
-        singleRun: true
+        singleRun: false
       }
+    },
+    coffee: {
+      compile: {
+        options: {
+          sourceMap: true,
+          joinExt: '.src.coffee.joined',
+          join: true
+        },
+        files: {
+          'app/scripts/app.js': 'app/scripts/{,*/}*.coffee'
+        }
+      },
     }
   });
 

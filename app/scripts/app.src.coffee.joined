@@ -1,0 +1,151 @@
+'use strict'
+
+# Returns the ISO week of the date.
+Date.prototype.getWeek = ->
+  date = new Date(this.getTime());
+  date.setHours(0, 0, 0, 0);
+  # Thursday in current week decides the year.
+  date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+  # January 4 is always in week 1.
+  week1 = new Date(date.getFullYear(), 0, 4);
+  # Adjust to Thursday in week 1 and count number of weeks from date to week1.
+  1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 \
+    - 3 + (week1.getDay() + 6) % 7) / 7);
+
+angular
+  .module 'ngTestingApp', [
+    'ngRoute'
+  ]
+  .config ['$routeProvider', ($routeProvider) ->
+    $routeProvider
+      .when '/', {
+        templateUrl: 'views/main.html',
+        controller: 'MainCtrl'
+      }
+      .otherwise {
+        redirectTo: '/'
+      }
+    ]
+
+angular.module('ngTestingApp')
+  .controller 'MainCtrl', ['$scope', 'Sections', 'ControlTypes', ($scope, Sections, ControlTypes) ->
+      $scope.sections = Sections.getAll()
+      $scope.currentSection = $scope.sections[0]
+      $scope.isHasValidationError = (errorObject) ->
+        debugger;
+        return e for own k,e of errorObject when e
+      $scope.getControlTypeUrl = (type) ->
+        ControlTypes.getByType(type)
+      changeValue = (direction) ->
+        switch ($scope.currentSection.type || 'number')
+          when 'number'
+            newValue = $scope.currentSection.value + (if direction is 'down' then -1 else 1)
+          when 'date'
+            newValue = new Date($scope.currentSection.value.getTime() + \
+                (24 * 60 * 60 * 1000)*(if direction is 'down' then -1 else 1));
+          when 'select'
+            newValue = $scope.currentSection.availibleValues[ \
+              $scope.currentSection.availibleValues.indexOf($scope.currentSection.value) + \
+              (if direction is 'down' then -1 else 1)]
+            newValue = $scope.currentSection.value if not newValue?
+        debugger
+        $scope.currentSection.value = newValue if not $scope.currentSection.range? or
+          ($scope.currentSection.range? and
+          $scope.currentSection.range.min < newValue <$scope.currentSection.range.max)
+
+
+      $scope.incrementCurrentSection = ->
+        changeValue 'up'
+      $scope.decrementCurrentSection = ->
+        changeValue 'down'
+      $scope
+    ]
+
+angular.module('ngTestingApp')
+  .directive 'dateInput', ['dateFilter', (dateFilter) ->
+    {
+      require: 'ngModel'
+      template: '<input type="date"></input>'
+      replace: true
+      link: (scope, elm, attrs, ngModelCtrl) ->
+          ngModelCtrl.$formatters.unshift (modelValue) ->
+            dateFilter(modelValue, 'yyyy-MM-dd');
+
+          ngModelCtrl.$parsers.unshift (viewValue) ->
+            new Date(viewValue);
+    }
+  ]
+
+angular.module('ngTestingApp')
+  .factory 'ControlTypes', ->
+    types = ['number','select','date','panel']
+
+    {
+      getAll: -> types
+      getByType: (type) ->
+        "views/controls/#{if type in types then type else 'number'}.html"
+    }
+
+angular.module('ngTestingApp')
+  .factory 'Sections', ->
+    _today = new Date()
+    sections = [
+      {
+        id: 'year'
+        name: 'Год'
+        value: _today.getFullYear()
+      },{
+        id: 'quarter'
+        name: 'Квартал'
+        value: 'Первый'
+        type: 'select'
+        availibleValues: [
+          'Первый'
+          'Второй'
+          'Третий'
+          'Четвертый'
+        ]
+      },{
+        id: 'month'
+        name: 'Месяц'
+        type: 'select'
+        value: 'Январь'
+        availibleValues: [
+          'Январь'
+          'Февраль'
+          'Март'
+          'Апрель'
+          'Май'
+          'Июнь'
+          'Июль'
+          'Август'
+          'Сентябрь'
+          'Октябрь'
+          'Ноябрь'
+          'Декабрь'
+        ]
+      },{
+        id: 'week'
+        name: 'Неделя'
+        value: _today.getWeek()
+        range:
+          max: 52
+          min: 1
+      },{
+        id: 'day'
+        name: 'День'
+        value: _today
+        type: 'date'
+        range:
+          min: new Date('1900-01-01')
+          max: new Date('2100-01-01')
+      }
+    ]
+
+    sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth()+1)/3)-1]
+    sections[2].value = sections[2].availibleValues[_today.getMonth()]
+
+    {
+      getAll: -> sections
+      getById: (id) -> (s for s in sections when s.id is id)
+    }
