@@ -1,0 +1,1 @@
+<input date-input="" name="{{ section.id }}" placeholder="yyyy-MM-dd" class="form-control input-sm" ng-model="section.value" ng-disabled="$parent.currentSection.id!=section.id" min="{{ section.range.min | date:'yyyy-MM-dd' }}" max="{{ section.range.max | date:'yyyy-MM-dd' }}" required>
