@@ -11,3 +11,5 @@ Date.prototype.getWeek = ->
   # Adjust to Thursday in week 1 and count number of weeks from date to week1.
   1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 \
     - 3 + (week1.getDay() + 6) % 7) / 7);
+
+angular.module 'ngTestingApp', ['ngRoute', 'ngResource', 'ngAnimate']
