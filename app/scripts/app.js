@@ -38,6 +38,7 @@
             return e;
           }
         }
+        return false;
       };
       $scope.getControlTypeUrl = function(type) {
         return ControlTypes.getByType(type);

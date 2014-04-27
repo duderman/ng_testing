@@ -36,6 +36,7 @@ angular.module('ngTestingApp')
       $scope.currentSection = $scope.sections[0]
       $scope.isHasValidationError = (errorObject) ->
         return e for own k,e of errorObject when e
+        false
       $scope.getControlTypeUrl = (type) ->
         ControlTypes.getByType(type)
       $scope.incrementCurrentSection = ->
