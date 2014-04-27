@@ -1,8 +1,4 @@
-angular
-  .module 'ngTestingApp', [
-    'ngRoute'
-    'ngResource'
-  ]
+angular.module 'ngTestingApp'
   .config ['$routeProvider', ($routeProvider) ->
     $routeProvider
       .when '/', {

@@ -24,6 +24,7 @@ $icon-font-path: "/bower_components/bootstrap-sass-official/vendor/assets/fonts/
   @include border-radius(3px);
   background-color: #8c8c8c;
   padding: 0;
+  z-index: 100;
 
   .panel-header {
     background-color: #575757
@@ -31,5 +32,14 @@ $icon-font-path: "/bower_components/bootstrap-sass-official/vendor/assets/fonts/
 
   .panel-arrow {
     @extend .btn;
+  }
+
+  .panel-header, .panel-arrow {
+    z-index: 100;
+  }
+
+  .panel-body {
+    position: relative;
+    z-index: 99;
   }
 }

@@ -12,7 +12,65 @@
     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
   };
 
-  angular.module('ngTestingApp', ['ngRoute', 'ngResource']).config([
+  angular.module('ngTestingApp', ['ngRoute', 'ngResource', 'ngAnimate']);
+
+  angular.module('ngTestingApp').animation('.panel-body', function() {
+    var DISTANCE, DURATION, animateUp;
+    DURATION = 300;
+    DISTANCE = 50;
+    animateUp = function(element, className, done) {
+      var direction, dublicateElment;
+      direction = (function() {
+        switch (className) {
+          case 'up':
+            return 1;
+          case 'down':
+            return -1;
+        }
+      })();
+      if (direction == null) {
+        return;
+      }
+      element.stop();
+      element.css({
+        top: 0,
+        opacity: 1
+      });
+      dublicateElment = jQuery("<div>").addClass(element.attr('class')).css({
+        position: 'absolute',
+        top: element.offset().top,
+        left: element.offset().left,
+        opacity: 1,
+        width: element.outerWidth(),
+        'z-index': 100,
+        'text-align': 'center'
+      }).html(element.text()).appendTo(jQuery('body'));
+      element.css({
+        top: DISTANCE * direction,
+        opacity: 0
+      });
+      dublicateElment.animate({
+        top: dublicateElment.position().top - (DISTANCE * direction),
+        opacity: 0
+      }, DURATION, function() {
+        return dublicateElment.remove();
+      });
+      element.animate({
+        top: 0,
+        opacity: 1
+      }, DURATION, done());
+      return function(cancel) {
+        if (cancel) {
+          return element.stop();
+        }
+      };
+    };
+    return {
+      addClass: animateUp
+    };
+  });
+
+  angular.module('ngTestingApp').config([
     '$routeProvider', function($routeProvider) {
       return $routeProvider.when('/', {
         templateUrl: 'views/main.html',
@@ -26,7 +84,8 @@
   ]);
 
   angular.module('ngTestingApp').controller('MainCtrl', [
-    '$scope', 'Sections', 'ControlTypes', function($scope, Sections, ControlTypes) {
+    '$scope', 'Sections', 'ControlTypes', '$timeout', function($scope, Sections, ControlTypes, $timeout) {
+      var changeCurrentSection;
       $scope.sections = Sections.getAll();
       $scope.sections.$promise.then(function() {
         return $scope.currentSection = $scope.sections[0];
@@ -45,11 +104,18 @@
       $scope.getControlTypeUrl = function(type) {
         return ControlTypes.getByType(type);
       };
+      changeCurrentSection = function(direction) {
+        $scope.panelBodyAction = direction;
+        $timeout(function() {
+          return $scope.panelBodyAction = '';
+        }, 300);
+        return Sections.changeValue($scope.currentSection, direction);
+      };
       $scope.incrementCurrentSection = function() {
-        return Sections.changeValue($scope.currentSection, 'up');
+        return changeCurrentSection('up');
       };
       $scope.decrementCurrentSection = function() {
-        return Sections.changeValue($scope.currentSection, 'down');
+        return changeCurrentSection('down');
       };
       return $scope;
     }

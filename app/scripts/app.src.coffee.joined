@@ -12,11 +12,43 @@ Date.prototype.getWeek = ->
   1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 \
     - 3 + (week1.getDay() + 6) % 7) / 7);
 
-angular
-  .module 'ngTestingApp', [
-    'ngRoute'
-    'ngResource'
-  ]
+angular.module 'ngTestingApp', ['ngRoute', 'ngResource', 'ngAnimate']
+
+angular.module 'ngTestingApp'
+  .animation '.panel-body', ->
+    DURATION = 300
+    DISTANCE = 50
+    animateUp = (element, className, done) ->
+      direction = switch className
+        when 'up' then 1
+        when 'down' then -1
+      return if not direction?
+      element.stop()
+      element.css { top: 0, opacity: 1,  }
+      dublicateElment = jQuery("<div>")
+        .addClass(element.attr('class'))
+        .css {
+          position: 'absolute',
+          top: element.offset().top,
+          left: element.offset().left,
+          opacity: 1,
+          width: element.outerWidth(),
+          'z-index': 100,
+          'text-align': 'center'
+        }
+        .html(element.text())
+        .appendTo jQuery('body')
+      element.css { top: DISTANCE*direction, opacity: 0 }
+      dublicateElment.animate { top: dublicateElment.position().top-(DISTANCE*direction), opacity: 0 }, DURATION, ->
+        dublicateElment.remove()
+      element.animate { top: 0, opacity: 1 }, DURATION, done()
+      return (cancel) ->
+        element.stop() if cancel
+    {
+      addClass: animateUp
+    }
+
+angular.module 'ngTestingApp'
   .config ['$routeProvider', ($routeProvider) ->
     $routeProvider
       .when '/', {
@@ -32,7 +64,7 @@ angular
     ]
 
 angular.module 'ngTestingApp'
-  .controller 'MainCtrl', ['$scope', 'Sections', 'ControlTypes', ($scope, Sections, ControlTypes) ->
+  .controller 'MainCtrl', ['$scope', 'Sections', 'ControlTypes', '$timeout', ($scope, Sections, ControlTypes, $timeout) ->
       $scope.sections = Sections.getAll()
       $scope.sections.$promise.then ->
         $scope.currentSection = $scope.sections[0]
@@ -41,12 +73,20 @@ angular.module 'ngTestingApp'
         false
       $scope.getControlTypeUrl = (type) ->
         ControlTypes.getByType(type)
+
+      changeCurrentSection = (direction) ->
+        $scope.panelBodyAction = direction
+        $timeout ->
+          $scope.panelBodyAction = ''
+        , 300
+        Sections.changeValue $scope.currentSection, direction
       $scope.incrementCurrentSection = ->
-        Sections.changeValue $scope.currentSection, 'up'
+        changeCurrentSection 'up'
       $scope.decrementCurrentSection = ->
-        Sections.changeValue $scope.currentSection, 'down'
+        changeCurrentSection 'down'
       $scope
     ]
+
 
 angular.module('ngTestingApp')
   .directive 'dateInput', ['dateFilter', (dateFilter) ->

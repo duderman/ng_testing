@@ -1,5 +1,5 @@
 angular.module 'ngTestingApp'
-  .controller 'MainCtrl', ['$scope', 'Sections', 'ControlTypes', ($scope, Sections, ControlTypes) ->
+  .controller 'MainCtrl', ['$scope', 'Sections', 'ControlTypes', '$timeout', ($scope, Sections, ControlTypes, $timeout) ->
       $scope.sections = Sections.getAll()
       $scope.sections.$promise.then ->
         $scope.currentSection = $scope.sections[0]
@@ -8,9 +8,17 @@ angular.module 'ngTestingApp'
         false
       $scope.getControlTypeUrl = (type) ->
         ControlTypes.getByType(type)
+
+      changeCurrentSection = (direction) ->
+        $scope.panelBodyAction = direction
+        $timeout ->
+          $scope.panelBodyAction = ''
+        , 300
+        Sections.changeValue $scope.currentSection, direction
       $scope.incrementCurrentSection = ->
-        Sections.changeValue $scope.currentSection, 'up'
+        changeCurrentSection 'up'
       $scope.decrementCurrentSection = ->
-        Sections.changeValue $scope.currentSection, 'down'
+        changeCurrentSection 'down'
       $scope
     ]
+
