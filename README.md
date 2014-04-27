@@ -2,4 +2,5 @@ ng_testing
 ==========
 
 ### TODO
- [] Write tests
+ [x] Write tests
+ [ ] Write E2E tests
