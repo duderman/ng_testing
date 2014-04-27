@@ -1,61 +1,12 @@
-angular.module('ngTestingApp')
-  .factory 'Sections', ->
-    _today = new Date()
-    sections = [
-      {
-        id: 'year'
-        name: 'Год'
-        value: _today.getFullYear()
-      },{
-        id: 'quarter'
-        name: 'Квартал'
-        value: 'Первый'
-        type: 'select'
-        availibleValues: [
-          'Первый'
-          'Второй'
-          'Третий'
-          'Четвертый'
-        ]
-      },{
-        id: 'month'
-        name: 'Месяц'
-        type: 'select'
-        value: 'Январь'
-        availibleValues: [
-          'Январь'
-          'Февраль'
-          'Март'
-          'Апрель'
-          'Май'
-          'Июнь'
-          'Июль'
-          'Август'
-          'Сентябрь'
-          'Октябрь'
-          'Ноябрь'
-          'Декабрь'
-        ]
-      },{
-        id: 'week'
-        name: 'Неделя'
-        value: _today.getWeek()
-        range:
-          max: 52
-          min: 1
-      },{
-        id: 'day'
-        name: 'День'
-        value: _today
-        type: 'date'
-        range:
-          min: new Date('1900-01-01')
-          max: new Date('2100-01-01')
-      }
-    ]
-
-    sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth()+1)/3)-1]
-    sections[2].value = sections[2].availibleValues[_today.getMonth()]
+angular.module 'ngTestingApp'
+  .factory 'Sections', ['$resource', ($resource) ->
+    sections = $resource('data/sections.json').query ->
+      _today = new Date()
+      sections[0].value = _today.getFullYear()
+      sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth()+1)/3)-1]
+      sections[2].value = sections[2].availibleValues[_today.getMonth()]
+      sections[3].value = _today.getWeek()
+      sections[4].value = _today
 
     {
       getAll: -> sections
@@ -74,3 +25,4 @@ angular.module('ngTestingApp')
         value.value = newValue if not value.range? or (value.range? and value.range.min <= newValue <= value.range.max)
 
     }
+  ]

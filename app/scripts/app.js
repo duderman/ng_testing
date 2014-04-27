@@ -12,7 +12,7 @@
     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
   };
 
-  angular.module('ngTestingApp', ['ngRoute']).config([
+  angular.module('ngTestingApp', ['ngRoute', 'ngResource']).config([
     '$routeProvider', function($routeProvider) {
       return $routeProvider.when('/', {
         templateUrl: 'views/main.html',
@@ -28,7 +28,9 @@
   angular.module('ngTestingApp').controller('MainCtrl', [
     '$scope', 'Sections', 'ControlTypes', function($scope, Sections, ControlTypes) {
       $scope.sections = Sections.getAll();
-      $scope.currentSection = $scope.sections[0];
+      $scope.sections.$promise.then(function() {
+        return $scope.currentSection = $scope.sections[0];
+      });
       $scope.isHasValidationError = function(errorObject) {
         var e, k;
         for (k in errorObject) {
@@ -84,83 +86,55 @@
     };
   });
 
-  angular.module('ngTestingApp').factory('Sections', function() {
-    var sections, _today;
-    _today = new Date();
-    sections = [
-      {
-        id: 'year',
-        name: 'Год',
-        value: _today.getFullYear()
-      }, {
-        id: 'quarter',
-        name: 'Квартал',
-        value: 'Первый',
-        type: 'select',
-        availibleValues: ['Первый', 'Второй', 'Третий', 'Четвертый']
-      }, {
-        id: 'month',
-        name: 'Месяц',
-        type: 'select',
-        value: 'Январь',
-        availibleValues: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-      }, {
-        id: 'week',
-        name: 'Неделя',
-        value: _today.getWeek(),
-        range: {
-          max: 52,
-          min: 1
-        }
-      }, {
-        id: 'day',
-        name: 'День',
-        value: _today,
-        type: 'date',
-        range: {
-          min: new Date('1900-01-01'),
-          max: new Date('2100-01-01')
-        }
-      }
-    ];
-    sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth() + 1) / 3) - 1];
-    sections[2].value = sections[2].availibleValues[_today.getMonth()];
-    return {
-      getAll: function() {
-        return sections;
-      },
-      getById: function(id) {
-        var s, _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = sections.length; _i < _len; _i++) {
-          s = sections[_i];
-          if (s.id === id) {
-            _results.push(s);
+  angular.module('ngTestingApp').factory('Sections', [
+    '$resource', function($resource) {
+      var sections;
+      sections = $resource('data/sections.json').query(function() {
+        var _today;
+        _today = new Date();
+        sections[0].value = _today.getFullYear();
+        sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth() + 1) / 3) - 1];
+        sections[2].value = sections[2].availibleValues[_today.getMonth()];
+        sections[3].value = _today.getWeek();
+        return sections[4].value = _today;
+      });
+      return {
+        getAll: function() {
+          return sections;
+        },
+        getById: function(id) {
+          var s, _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = sections.length; _i < _len; _i++) {
+            s = sections[_i];
+            if (s.id === id) {
+              _results.push(s);
+            }
+          }
+          return _results;
+        },
+        changeValue: function(value, direction) {
+          var newValue;
+          switch (value.type || 'number') {
+            case 'number':
+              newValue = value.value + (direction === 'down' ? -1 : 1);
+              break;
+            case 'date':
+              newValue = new Date(value.value.getTime() + (24 * 60 * 60 * 1000) * (direction === 'down' ? -1 : 1));
+              break;
+            case 'select':
+              newValue = value.availibleValues[value.availibleValues.indexOf(value.value) + (direction === 'down' ? -1 : 1)];
+              if (newValue == null) {
+                newValue = value.value;
+              }
+          }
+          if ((value.range == null) || ((value.range != null) && (value.range.min <= newValue && newValue <= value.range.max))) {
+            return value.value = newValue;
           }
         }
-        return _results;
-      },
-      changeValue: function(value, direction) {
-        var newValue;
-        switch (value.type || 'number') {
-          case 'number':
-            newValue = value.value + (direction === 'down' ? -1 : 1);
-            break;
-          case 'date':
-            newValue = new Date(value.value.getTime() + (24 * 60 * 60 * 1000) * (direction === 'down' ? -1 : 1));
-            break;
-          case 'select':
-            newValue = value.availibleValues[value.availibleValues.indexOf(value.value) + (direction === 'down' ? -1 : 1)];
-            if (newValue == null) {
-              newValue = value.value;
-            }
-        }
-        if ((value.range == null) || ((value.range != null) && (value.range.min <= newValue && newValue <= value.range.max))) {
-          return value.value = newValue;
-        }
-      }
-    };
-  });
+      };
+    }
+  ]);
 
 }).call(this);
 

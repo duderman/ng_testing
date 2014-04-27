@@ -1,6 +1,7 @@
 angular
   .module 'ngTestingApp', [
     'ngRoute'
+    'ngResource'
   ]
   .config ['$routeProvider', ($routeProvider) ->
     $routeProvider
