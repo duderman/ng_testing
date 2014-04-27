@@ -96,7 +96,13 @@
         sections[1].value = sections[1].availibleValues[Math.ceil((_today.getMonth() + 1) / 3) - 1];
         sections[2].value = sections[2].availibleValues[_today.getMonth()];
         sections[3].value = _today.getWeek();
-        return sections[4].value = _today;
+        sections[4].value = _today;
+        if (sections[4].range != null) {
+          return sections[4].range = {
+            min: new Date(sections[4].range.min),
+            max: new Date(sections[4].range.max)
+          };
+        }
       });
       return {
         getAll: function() {

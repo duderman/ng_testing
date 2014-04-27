@@ -82,7 +82,10 @@ angular.module 'ngTestingApp'
       sections[2].value = sections[2].availibleValues[_today.getMonth()]
       sections[3].value = _today.getWeek()
       sections[4].value = _today
-
+      if sections[4].range?
+        sections[4].range =
+          min: new Date(sections[4].range.min),
+          max: new Date(sections[4].range.max)
     {
       getAll: -> sections
       getById: (id) -> (s for s in sections when s.id is id)
@@ -97,7 +100,7 @@ angular.module 'ngTestingApp'
             newValue = value.availibleValues[value.availibleValues.indexOf(value.value) + \
               (if direction is 'down' then -1 else 1)]
             newValue = value.value if not newValue?
-        value.value = newValue if not value.range? or (value.range? and value.range.min <= newValue <= value.range.max)
 
+        value.value = newValue if not value.range? or (value.range? and value.range.min <= newValue <= value.range.max)
     }
   ]
