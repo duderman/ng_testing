@@ -354,6 +354,7 @@ module.exports = function (grunt) {
         singleRun: false
       }
     },
+    // CoffeeScript
     coffee: {
       compile: {
         options: {
